@@ -1,19 +1,30 @@
 package com.mattchiaravalloti.commonactors;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Scanner;
 import java.util.Set;
 
 
@@ -25,97 +36,53 @@ public class ListActivity extends ActionBarActivity {
         setContentView(R.layout.activity_list);
 
         // get the movie titles that were argued in the main activity
-        final String title1 = getIntent().getStringExtra("MOVIE_TITLE_1");
-        final String title2 = getIntent().getStringExtra("MOVIE_TITLE_2");
+        String title1 = getIntent().getStringExtra("MOVIE_TITLE_1");
+        String title2 = getIntent().getStringExtra("MOVIE_TITLE_2");
 
-        // access the internet on a new thread
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Set<String> commonActors = URLParser.getCommonActors(title1, title2);
+        TextView headingTitle1 = (TextView)findViewById(R.id.headingTitle1);
+        headingTitle1.setText(title1.toUpperCase());
 
-                // set the singleton actor store to be the common actors between these 2 movies
-                ActorListStore als = ActorListStore.getInstance();
-                als.setCommon(commonActors);
-            }
-        });
+        TextView headingTitle2 = (TextView)findViewById(R.id.headingTitle2);
+        headingTitle2.setText(title2.toUpperCase());
 
-        // start the thread that finds common actors and wait for it to finsih before continuing.
-        t.start();
-        try {
-            t.join();
-        } catch (Exception e) {
-            e.printStackTrace();
+        // adapted from android developer website
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            new DownloadWebpageTask().execute(title1, title2);
+        } else {
+            ((TextView)findViewById(R.id.listOfActors)).setText("No network connection available.");
         }
-
-        // get the common actors from these 2 movies from the singleton actor store
-        ActorListStore als = ActorListStore.getInstance();
-
-        Set<String> commonActors = als.getCommon();
-
-        RelativeLayout rView = new RelativeLayout(this);
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams
-                (RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.CENTER_HORIZONTAL);
-
-        TextView heading = new TextView(this);
-        heading.setText("Common actors in " + title1.toUpperCase() + " and " + title2.toUpperCase());
-        heading.setY(30);
-
-        rView.addView(heading, params);
-
-
-        float y = 150;
-
-        for (String actor : commonActors) {
-            TextView actorText = new TextView(this);
-            actorText.setText(actor);
-
-            actorText.setY(y);
-
-            rView.addView(actorText);
-
-            y += 75;
-        }
-
-        Button backButton = new Button(this);
-        backButton.setText("Go back");
-
-        final Activity realThis = this;
-
-        backButton.setOnClickListener(new Button.OnClickListener() {
-            public void onClick(View v) {
-                Intent i = new Intent(realThis, MainActivity.class);
-                startActivityForResult(i,0);
-            }
-        });
-
-        backButton.setY(y);
-
-        rView.addView(backButton);
-
-        setContentView(rView);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_list, menu);
-        return true;
+    public void onBack(View v) {
+        Intent i = new Intent(this, MainActivity.class);
+        startActivity(i);
+        finish();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    // adapted from: http://developer.android.com/training/basics/network-ops/connecting.html
+    private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
+        @Override
+        protected String doInBackground(String... params) {
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+            // params comes from the execute() call: params[0] is the url.
+            Set<String> commonActors = URLParser.getCommonActors(params[0], params[1]);
+
+            String actorList = "";
+
+            for (String actor : commonActors) {
+                actorList += actor + "\n";
+            }
+
+            return actorList;
+
         }
-
-        return super.onOptionsItemSelected(item);
+        // onPostExecute displays the results of the AsyncTask.
+        @Override
+        protected void onPostExecute(String result) {
+            ((TextView)findViewById(R.id.listOfActors)).setText(result);
+        }
     }
 }
