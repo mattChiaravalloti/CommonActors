@@ -52,15 +52,16 @@ public class ListActivity extends ActionBarActivity {
         protected String doInBackground(String... params) {
 
             // params comes from the execute() call: params[0] is the url.
-            Set<String> commonActors = URLParser.getCommonActors(params[0], params[1]);
+//            Set<String> commonActors = URLParser.getCommonActors(params[0], params[1]);
+            Set<String> commonActors = IMDBParser.getCommonActors(params);
 
-            String actorList = "";
+            StringBuilder actorList = new StringBuilder();
 
             for (String actor : commonActors) {
-                actorList += actor + "\n";
+                actorList.append(actor).append("\n");
             }
 
-            return actorList;
+            return actorList.toString();
 
         }
         // onPostExecute displays the results of the AsyncTask.
