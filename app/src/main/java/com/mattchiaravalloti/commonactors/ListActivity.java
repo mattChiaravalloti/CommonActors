@@ -27,23 +27,32 @@ public class ListActivity extends ActionBarActivity {
         setContentView(R.layout.activity_list);
 
         // get the movie titles that were argued in the main activity
-        String title1 = getIntent().getStringExtra("MOVIE_TITLE_1");
-        String title2 = getIntent().getStringExtra("MOVIE_TITLE_2");
+        String name1 = getIntent().getStringExtra("ENTITY_NAME_1");
+        String name2 = getIntent().getStringExtra("ENTITY_NAME_2");
+
+        boolean getCommonActors = getIntent().getBooleanExtra("GET_COMMON_ACTORS", true);
+
+        if (!getCommonActors) {
+            ((TextView)findViewById(R.id.heading)).setText("Common movies for");
+            setTitle("Common Movies");
+        } else {
+            setTitle("Common Actors");
+        }
 
         TextView headingTitle1 = (TextView)findViewById(R.id.headingTitle1);
-        headingTitle1.setText(title1.toUpperCase());
+        headingTitle1.setText(name1.toUpperCase());
 
         TextView headingTitle2 = (TextView)findViewById(R.id.headingTitle2);
-        headingTitle2.setText(title2.toUpperCase());
+        headingTitle2.setText(name2.toUpperCase());
 
         // adapted from android developer website
         ConnectivityManager connMgr = (ConnectivityManager)
                 getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            new DownloadWebpageTask().execute(title1, title2);
+            new DownloadWebpageTask(getCommonActors).execute(name1, name2);
         } else {
-            ((TextView)findViewById(R.id.listOfActors)).setText("No network connection available.");
+            ((TextView)findViewById(R.id.listOfResults)).setText("No network connection available.");
         }
     }
 
@@ -55,35 +64,45 @@ public class ListActivity extends ActionBarActivity {
 
     // adapted from: http://developer.android.com/training/basics/network-ops/connecting.html
     private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
+        private boolean getCommonActors;
+
+        public DownloadWebpageTask(boolean getCommonActors) {
+            super();
+            this.getCommonActors = getCommonActors;
+        }
+
         @Override
         protected String doInBackground(String... params) {
+            // params comes from the execute() call: params[0] is the first entity name
+            Map<String,String> commonResults;
 
-            // params comes from the execute() call: params[0] is the first url.
-//            Set<String> commonActors = IMDBParser.getCommonActors(params);
-            Map<String,String> commonActors = IMDBParser.getCommonActors(params);
-
-            StringBuilder actorList = new StringBuilder();
-
-            for (Map.Entry<String,String> actor : commonActors.entrySet()) {
-                actorList.append("<a href='")
-                        .append(BASE_URL)
-                        .append(actor.getValue())
-                        .append("'>")
-                        .append(actor.getKey())
-                        .append("</a>")
-                        .append("<br>");
-//                actorList.append(actor).append("\n");
+            if (this.getCommonActors) {
+                commonResults = IMDBParser.getCommonActors(params);
+            } else {
+                commonResults = IMDBParser.getCommonMovies(params);
             }
 
-            return actorList.toString();
+            StringBuilder resultsList = new StringBuilder();
+
+            for (Map.Entry<String,String> result : commonResults.entrySet()) {
+                resultsList.append("<a href='")
+                        .append(BASE_URL)
+                        .append(result.getValue())
+                        .append("'>")
+                        .append(result.getKey())
+                        .append("</a>")
+                        .append("<br>");
+            }
+
+            return resultsList.toString();
 
         }
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            TextView actorsList = (TextView) findViewById(R.id.listOfActors);
-            actorsList.setText(Html.fromHtml(result));
-            actorsList.setMovementMethod(LinkMovementMethod.getInstance());
+            TextView resultsList = (TextView) findViewById(R.id.listOfResults);
+            resultsList.setText(Html.fromHtml(result));
+            resultsList.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 }

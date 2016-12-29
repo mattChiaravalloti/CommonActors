@@ -9,7 +9,7 @@
     <EditText
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:id="@+id/movie1"
+        android:id="@+id/entity1"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp" />
@@ -17,8 +17,8 @@
     <EditText
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:id="@+id/movie2"
-        android:layout_below="@+id/movie1"
+        android:id="@+id/entity2"
+        android:layout_below="@+id/entity1"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp" />
 
@@ -28,19 +28,40 @@
         android:text="Find Common Actors!"
         android:id="@+id/findButton"
         android:onClick="findCommonActors"
-        android:layout_below="@+id/movie2"
+        android:layout_below="@+id/optionGroup"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp" />
+        android:layout_marginTop="20dp" />
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/optionGroup"
+        android:layout_below="@+id/entity2"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp">
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Common Actors"
+            android:id="@+id/commonActorsOption"
+            android:checked="true" />
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Common Movies"
+            android:id="@+id/commonMoviesOption" />
+    </RadioGroup>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Movie 1:"
-        android:id="@+id/movie1Label"
+        android:id="@+id/entity1Label"
         android:layout_alignParentTop="true"
-        android:layout_alignLeft="@+id/movie1"
-        android:layout_alignStart="@+id/movie1"
+        android:layout_alignLeft="@+id/entity1"
+        android:layout_alignStart="@+id/entity1"
         android:layout_marginTop="10dp" />
 
     <TextView
@@ -48,9 +69,9 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:text="Movie 2:"
-        android:id="@+id/movie2Label"
-        android:layout_below="@+id/movie1"
-        android:layout_alignLeft="@+id/movie2"
-        android:layout_alignStart="@+id/movie2"
+        android:id="@+id/entity2Label"
+        android:layout_below="@+id/entity1"
+        android:layout_alignLeft="@+id/entity2"
+        android:layout_alignStart="@+id/entity2"
         android:layout_marginTop="10dp" />
 </RelativeLayout>

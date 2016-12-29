@@ -6,7 +6,12 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -16,25 +21,53 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        RadioButton actorOption = (RadioButton)findViewById(R.id.commonActorsOption);
+        actorOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    ((TextView)findViewById(R.id.entity1Label)).setText("Movie 1");
+                    ((TextView)findViewById(R.id.entity2Label)).setText("Movie 2");
+                    ((Button)findViewById(R.id.findButton)).setText("Find Common Actors!");
+                }
+            }
+        });
+
+        RadioButton movieOption = (RadioButton)findViewById(R.id.commonMoviesOption);
+        movieOption.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    ((TextView)findViewById(R.id.entity1Label)).setText("Actor 1");
+                    ((TextView)findViewById(R.id.entity2Label)).setText("Actor 2");
+                    ((Button)findViewById(R.id.findButton)).setText("Find Common Movies!");
+                }
+            }
+        });
     }
 
     public void findCommonActors(View v) {
-        EditText movie1 = (EditText)findViewById(R.id.movie1);
-        EditText movie2 = (EditText)findViewById(R.id.movie2);
+        EditText entity1 = (EditText)findViewById(R.id.entity1);
+        EditText entity2 = (EditText)findViewById(R.id.entity2);
 
-        String title1 = movie1.getText().toString();
-        String title2 = movie2.getText().toString();
+        String name1 = entity1.getText().toString();
+        String name2 = entity2.getText().toString();
 
-        if (title1.isEmpty() || title2.isEmpty()) {
+        if (name1.isEmpty() || name2.isEmpty()) {
             return;
         }
+
+        RadioGroup options = (RadioGroup)findViewById(R.id.optionGroup);
+        boolean getCommonActors = options.getCheckedRadioButtonId() == R.id.commonActorsOption;
 
         Toast.makeText(this, "Please Wait! May take up to 20 seconds.", Toast.LENGTH_LONG).show();
 
         Intent i = new Intent(this, ListActivity.class);
 
-        i.putExtra("MOVIE_TITLE_1", title1);
-        i.putExtra("MOVIE_TITLE_2", title2);
+        i.putExtra("ENTITY_NAME_1", name1);
+        i.putExtra("ENTITY_NAME_2", name2);
+        i.putExtra("GET_COMMON_ACTORS", getCommonActors);
 
         startActivityForResult(i,1);
     }
