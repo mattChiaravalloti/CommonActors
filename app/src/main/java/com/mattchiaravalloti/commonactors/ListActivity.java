@@ -51,8 +51,7 @@ public class ListActivity extends ActionBarActivity {
         @Override
         protected String doInBackground(String... params) {
 
-            // params comes from the execute() call: params[0] is the url.
-//            Set<String> commonActors = URLParser.getCommonActors(params[0], params[1]);
+            // params comes from the execute() call: params[0] is the first url.
             Set<String> commonActors = IMDBParser.getCommonActors(params);
 
             StringBuilder actorList = new StringBuilder();
