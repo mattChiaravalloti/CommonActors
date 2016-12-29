@@ -6,7 +6,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,10 +74,11 @@ public class IMDBParser {
      * @param title The movie for which to get the cast of actors
      * @return The set of actors who are in the argued movie. Empty if a problem is encountered.
      */
-    private static Set<String> getActors(String title) {
+    private static Map<String,String> getActors(String title) {
         String id = getTitleID(title);
 
-        Set<String> actors = new HashSet<>();
+//        Set<String> actors = new HashSet<>();
+        Map<String,String> actors = new HashMap<>();
 
         if (id == null) {
             return actors;
@@ -93,11 +96,15 @@ public class IMDBParser {
 
             // get the table with all cast members and select just the spans with actors' names
             Element castTable = doc.select("table.cast_list").first();
-            Elements cast = castTable.select("span.itemprop");
+//            Elements cast = castTable.select("span.itemprop");
+            Elements cast = castTable.select("td.itemprop");
 
             // include just the text in the spans
             for (Element actor : cast) {
-                actors.add(actor.text());
+                String name = actor.text();
+                String path = actor.children().first().attr("href");
+//                actors.add(name);
+                actors.put(name, path);
             }
 
             return actors;
@@ -113,13 +120,14 @@ public class IMDBParser {
      * @param titles The array of movie titles for which to find common actors
      * @return The Set of actors' names who are common among all argued movies
      */
-    public static Set<String> getCommonActors(String... titles) {
+    public static Map<String,String> getCommonActors(String... titles) {
         // start with at least the actors from the first movie
-        Set<String> commonActors = new HashSet<>(getActors(titles[0]));
+//        Set<String> commonActors = new HashSet<>(getActors(titles[0]));
 
+        Map<String,String> commonActors = getActors(titles[0]);
         // for each of the remaining movies, retain only the one that are in common
         for (int i = 1; i < titles.length; i++) {
-            commonActors.retainAll(getActors(titles[i]));
+            commonActors.keySet().retainAll(getActors(titles[i]).keySet());
         }
 
         return commonActors;

@@ -7,12 +7,19 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
+
+import java.util.Map;
 import java.util.Set;
 
 
 public class ListActivity extends ActionBarActivity {
+    private static final String BASE_URL = "http://www.imdb.com";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,12 +59,20 @@ public class ListActivity extends ActionBarActivity {
         protected String doInBackground(String... params) {
 
             // params comes from the execute() call: params[0] is the first url.
-            Set<String> commonActors = IMDBParser.getCommonActors(params);
+//            Set<String> commonActors = IMDBParser.getCommonActors(params);
+            Map<String,String> commonActors = IMDBParser.getCommonActors(params);
 
             StringBuilder actorList = new StringBuilder();
 
-            for (String actor : commonActors) {
-                actorList.append(actor).append("\n");
+            for (Map.Entry<String,String> actor : commonActors.entrySet()) {
+                actorList.append("<a href='")
+                        .append(BASE_URL)
+                        .append(actor.getValue())
+                        .append("'>")
+                        .append(actor.getKey())
+                        .append("</a>")
+                        .append("<br>");
+//                actorList.append(actor).append("\n");
             }
 
             return actorList.toString();
@@ -66,7 +81,9 @@ public class ListActivity extends ActionBarActivity {
         // onPostExecute displays the results of the AsyncTask.
         @Override
         protected void onPostExecute(String result) {
-            ((TextView)findViewById(R.id.listOfActors)).setText(result);
+            TextView actorsList = (TextView) findViewById(R.id.listOfActors);
+            actorsList.setText(Html.fromHtml(result));
+            actorsList.setMovementMethod(LinkMovementMethod.getInstance());
         }
     }
 }
